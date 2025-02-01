@@ -17,20 +17,5 @@ public class Point {
     public int getY() {
         return y;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Point point = (Point) o;
-        return x == point.x && y == point.y;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Integer.hashCode(x);
-        result = 31 * result + Integer.hashCode(y);
-        return result;
-    }
 }
 // END
