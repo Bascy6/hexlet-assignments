@@ -2,8 +2,6 @@ package exercise;
 
 import org.junit.jupiter.api.Test;
 
-import javax.swing.text.Segment;
-import java.awt.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
