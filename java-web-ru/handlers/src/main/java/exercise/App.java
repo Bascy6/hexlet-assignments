@@ -1,25 +1,19 @@
 package exercise;
 
 import io.javalin.Javalin;
-import java.util.List;
 import io.javalin.http.Context;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.List;
 
 public final class App {
 
     public static Javalin getApp() {
-        Javalin app = Javalin.create(config -> {
-            config.plugins.enableDevLogging();
-        });
+        Javalin app = Javalin.create();
 
-        // Обработчик GET /phones
         app.get("/phones", ctx -> {
             List<String> phones = Data.getPhones();
             ctx.json(phones);
         });
 
-        // Обработчик GET /domains
         app.get("/domains", ctx -> {
             List<String> domains = Data.getDomains();
             ctx.json(domains);
