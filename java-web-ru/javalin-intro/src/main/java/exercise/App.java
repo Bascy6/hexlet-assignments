@@ -1,11 +1,14 @@
 package exercise;
 
+// BEGIN
 import io.javalin.Javalin;
+// END
 
 public final class App {
 
     public static Javalin getApp() {
 
+        // BEGIN
         Javalin app = Javalin.create(config -> {
             config.plugins.enableDevLogging();
         });
@@ -15,6 +18,7 @@ public final class App {
         });
 
         return app;
+        // END
     }
 
     public static void main(String[] args) {
