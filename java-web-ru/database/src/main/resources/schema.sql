@@ -1,0 +1,8 @@
+-- BEGIN
+DROP TABLE if EXISTS products;
+
+CREATE TABLE products (
+id INT PRIMARY KEY AUTO_INCREMENT,
+title VARCHAR(50) NOT NULL,
+price INT);
+-- END
