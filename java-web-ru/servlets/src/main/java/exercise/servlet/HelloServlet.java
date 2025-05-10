@@ -10,12 +10,17 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "HelloServlet", urlPatterns = "/hello")
 public class HelloServlet extends HttpServlet {
-    // BEGIN
+
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        var name = req.getParameter("name");
-        var message = "Hello, " + name + "!";
-        resp.getWriter().write(message);
+    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        String name = req.getParameter("name");
+
+        if (name == null || name.isEmpty()) {
+            name = "Guest";
+        }
+
+        String message = "Hello, " + name + "!";
+        req.setAttribute("message", message);
+        req.getRequestDispatcher("/WEB-INF/hello.jsp").forward(req, res);
     }
-    // END
 }

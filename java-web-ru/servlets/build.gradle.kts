@@ -41,6 +41,7 @@ gretty {
     integrationTestTask = "test"
     contextPath = '/'
     servletContainer = "tomcat10"
+    httpPort = 8080
 }
 
 tasks.test {
