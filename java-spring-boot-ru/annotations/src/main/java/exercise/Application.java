@@ -13,7 +13,7 @@ public class Application {
         for (Method method : Address.class.getDeclaredMethods()) {
             if (method.isAnnotationPresent(Inspect.class)) {
                 Class returnType = method.getReturnType();
-                System.out.println(" Method"
+                System.out.println("Method "
                         + method.getName()
                         + " returns a value of type "
                         + returnType.getSimpleName());
