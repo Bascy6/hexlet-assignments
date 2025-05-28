@@ -11,7 +11,6 @@ class Data {
 
     public static List<Post> getPosts() {
         Faker faker = new Faker();
-
         List<Integer> ids = IntStream
             .range(1, ITEMS_COUNT + 1)
             .boxed()
