@@ -20,7 +20,7 @@ import exercise.model.Post;
 @SpringBootApplication
 @RestController
 public class Application {
-    // Хранилище добавленных постов
+
     private List<Post> posts = Data.getPosts();
 
     public static void main(String[] args) {
