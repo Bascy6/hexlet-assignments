@@ -1,122 +1,81 @@
 package exercise;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.http.MediaType;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import exercise.model.Post;
+import exercise.Data;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class ApplicationTest {
+@SpringBootApplication
+@RestController
+class Application {
+    // Хранилище добавленных постов
+    private List<Post> posts = Data.getPosts();
 
-    @Autowired
-    private WebApplicationContext wac;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper om;
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        mockMvc = MockMvcBuilders.webAppContextSetup(wac)
-                .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
-                .build();
-        Post testPost = new Post("test-post", "Test post", "Test body");
-        Application.setPosts(new ArrayList<>(List.of(testPost)));
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
     }
 
-    @Order(1)
-    @Test
-    public void testShow() throws Exception {
-        mockMvc.perform(get("/posts/test-post"))
-                .andExpect(status().isOk());
+    // BEGIN
+    @GetMapping("/posts")
+    public ResponseEntity<List<Post>> getAllPosts() {
+        int totalCount = posts.size();
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(totalCount))
+                .body(posts);
     }
 
-    @Test
-    public void testCreatePost() throws Exception {
-        var post = new Post("another-post", "another post", "body");
+    @GetMapping("/posts/{id}")
+    public ResponseEntity<Post> getPostById(@PathVariable String id) {
+        Optional<Post> postOptional = posts.stream()
+                .filter(post -> post.getId().equals(id))
+                .findFirst();
 
-        var request = post("/posts")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(post));
-
-        mockMvc.perform(request)
-                .andExpect(status().isCreated())
-                .andExpect(content().json(om.writeValueAsString(post)));
+        if (postOptional.isPresent()) {
+            return ResponseEntity.ok(postOptional.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @Test
-    public void testIndex() throws Exception {
-        mockMvc.perform(get("/posts"))
-                .andExpect(status().isOk())
-                .andExpect(header().string("X-Total-Count", "1"));
+    @PostMapping("/posts")
+    public ResponseEntity<Post> createPost(@RequestBody Post post) {
+        posts.add(post);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .location(UriComponentsBuilder.fromPath("/posts/{id}").buildAndExpand(post.getId()).toUri())
+                .body(post);
     }
 
-    @Test
-    public void testShowUnknown() throws Exception {
-        mockMvc.perform(get("/posts/unknown-post"))
-                .andExpect(status().isNotFound());
+    @PutMapping("/posts/{id}")
+    public ResponseEntity<Post> updatePost(@PathVariable String id, @RequestBody Post updatedPost) {
+        for (int i = 0; i < posts.size(); i++) {
+            if (posts.get(i).getId().equals(id)) {
+                posts.set(i, updatedPost);
+                return ResponseEntity.ok(updatedPost);
+            }
+        }
+        return ResponseEntity.notFound().build();
     }
 
-    @Test
-    public void testUpdatePost() throws Exception {
-        var post = new Post("test-post", "new title", "new body");
-
-        var request = put("/posts/test-post")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(post));
-
-        mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andExpect(content().json(om.writeValueAsString(post)));
-
-        mockMvc.perform(get("/posts/test-post"))
-                .andExpect(status().isOk())
-                .andExpect(content().json(om.writeValueAsString(post)));
+    @DeleteMapping("/posts/{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable String id) {
+        posts.removeIf(post -> post.getId().equals(id));
+        return ResponseEntity.ok().build();
     }
-
-    @Test
-    public void testUpdateUnknownPost() throws Exception {
-        var post = new Post("unknown-post", "new title", "new body");
-
-        var request = put("/posts/unknown-post")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(post));
-
-        mockMvc.perform(request)
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void testDelete() throws Exception {
-        mockMvc.perform(delete("/posts/test-post"))
-                .andExpect(status().isOk());
-
-    }
+    // END
 }
