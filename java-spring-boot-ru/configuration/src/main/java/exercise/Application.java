@@ -39,7 +39,6 @@ public class Application {
         return result;
     }
     // END
-
     @GetMapping("/users")
     public List<User> index() {
         return users;
